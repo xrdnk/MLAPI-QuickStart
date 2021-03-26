@@ -1,6 +1,9 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 // NetworkBehaviour 継承に必要
 using MLAPI;
+// RPCに必要
 using MLAPI.Messaging;
 // NetworkVariable 利用に必要
 using MLAPI.NetworkVariable;
@@ -17,6 +20,9 @@ namespace MLAPIQuickStart
         [SerializeField,Tooltip("プレイヤー情報")]
         private GameObject floatingInfo;
 
+        [SerializeField, Tooltip("プレイヤーの武器リスト")]
+        private List<GameObject> playerWeapons;
+
         /// <summary>
         /// プレイヤーの色設定に利用するマテリアルのクローン
         /// </summary>
@@ -27,6 +33,8 @@ namespace MLAPIQuickStart
         private Transform _cameraTransform;
 
         private SceneScript _sceneScript;
+
+        private int _currentWeaponIndex = 1;
 
         #region Constants
         private static readonly string HORIZONTAL = "Horizontal";
@@ -45,17 +53,29 @@ namespace MLAPIQuickStart
         /// </summary>
         private readonly NetworkVariable<Color> _networkPlayerColor = new NetworkVariable<Color>
             (new NetworkVariableSettings {WritePermission = NetworkVariablePermission.OwnerOnly}, Color.white);
+        /// <summary>
+        /// 武器番号の同期変数
+        /// </summary>
+        private readonly NetworkVariable<int> _networkWeaponIndex = new NetworkVariable<int>
+            (new NetworkVariableSettings {WritePermission = NetworkVariablePermission.OwnerOnly});
 
         private void Awake()
         {
             // フック関数の設定
             _networkPlayerName.OnValueChanged += OnNameChanged;
             _networkPlayerColor.OnValueChanged += OnColorChanged;
+            _networkWeaponIndex.OnValueChanged += OnWeaponChanged;
 
             // カメラのTransformのキャッシュ
             _cameraTransform = Camera.main.transform;
 
-            _sceneScript = FindObjectOfType<SceneScript>();
+            _sceneScript = GameObject.Find("SceneReference").GetComponent<SceneReference>().SceneScript;
+
+            // 武器は最初全て非表示にする
+            foreach (var weapon in playerWeapons.Where(weapon => weapon != null))
+            {
+                weapon.SetActive(false);
+            }
         }
 
         private void Start()
@@ -93,6 +113,14 @@ namespace MLAPIQuickStart
 
             //　ローカルプレイヤーの場合，移動・回転処理を実行する
             Move();
+
+            // 右クリックで武器変更処理を走らせる
+            if (Input.GetButtonDown("Fire2"))
+            {
+                var nextIndex = _currentWeaponIndex++ % playerWeapons.Count;
+
+                ChangeActiveWeaponServerRpc(nextIndex);
+            }
         }
 
         private void OnDestroy()
@@ -104,7 +132,7 @@ namespace MLAPIQuickStart
         /// <summary>
         /// テキストチャットを送信する
         /// </summary>
-        /// <param name="serverRpcParams"></param>
+        /// <param name="serverRpcParams">ServerRpcParams</param>
         [ServerRpc(RequireOwnership = true)]
         public void SubmitMessageServerRpc(ServerRpcParams serverRpcParams = default)
         {
@@ -118,7 +146,7 @@ namespace MLAPIQuickStart
         /// プレイヤー名を設定する
         /// </summary>
         /// <param name="playerName">playerName</param>
-        /// <param name="serverRpcParams"></param>
+        /// <param name="serverRpcParams">ServerRpcParams</param>
         [ServerRpc(RequireOwnership = true)]
         private void SubmitPlayerNameServerRpc(string playerName, ServerRpcParams serverRpcParams = default)
             => _networkPlayerName.Value = playerName;
@@ -127,7 +155,7 @@ namespace MLAPIQuickStart
         /// プレイヤー色を設定する
         /// </summary>
         /// <param name="playerColor">playerColor</param>
-        /// <param name="serverRpcParams"></param>
+        /// <param name="serverRpcParams">ServerRpcParams</param>
         [ServerRpc(RequireOwnership = true)]
         private void SubmitPlayerColorServerRpc(Color playerColor, ServerRpcParams serverRpcParams = default)
             => _networkPlayerColor.Value = playerColor;
@@ -135,7 +163,7 @@ namespace MLAPIQuickStart
         /// <summary>
         /// 入室時メッセージを表示する
         /// </summary>
-        /// <param name="serverRpcParams"></param>
+        /// <param name="serverRpcParams">ServerRpcParams</param>
         [ServerRpc(RequireOwnership = true)]
         private void SubmitJoinedMessageServerRpc(ServerRpcParams serverRpcParams = default)
         {
@@ -144,6 +172,13 @@ namespace MLAPIQuickStart
                 _sceneScript.SetMessage($"{_networkPlayerName.Value} joined");
             }
         }
+
+        /// <summary>
+        /// 武器インデックスを設定する
+        /// </summary>
+        /// <param name="index">武器インデックス</param>
+        [ServerRpc(RequireOwnership = true)]
+        private void ChangeActiveWeaponServerRpc(int index) => _networkWeaponIndex.Value = index;
 
         /// <summary>
         /// プレイヤー名が変更された時に呼ばれるフック関数
@@ -163,6 +198,24 @@ namespace MLAPIQuickStart
             textPlayerName.color = newColor;
             _playerMaterialClone = new Material(GetComponent<Renderer>().material) {color = newColor};
             GetComponent<Renderer>().material = _playerMaterialClone;
+        }
+
+        /// <summary>
+        /// 武器インデックスが変更された時に呼ばれるフック関数
+        /// </summary>
+        /// <param name="oldIndex">前のインデックス</param>
+        /// <param name="newIndex">現在のインデックス</param>
+        private void OnWeaponChanged(int oldIndex, int newIndex)
+        {
+            if (0 < oldIndex && oldIndex < playerWeapons.Count && playerWeapons[oldIndex] != null)
+            {
+                playerWeapons[oldIndex].SetActive(false);
+            }
+
+            if (0 < newIndex && newIndex < playerWeapons.Count && playerWeapons[newIndex] != null)
+            {
+                playerWeapons[newIndex].SetActive(true);
+            }
         }
 
         /// <summary>

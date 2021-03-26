@@ -1,6 +1,8 @@
 ﻿using MLAPI;
 using MLAPI.NetworkVariable;
+using MLAPI.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace MLAPIQuickStart
@@ -14,6 +16,9 @@ namespace MLAPIQuickStart
 
         public PlayerScript PlayerScript { set => _playerScript = value; }
         private PlayerScript _playerScript;
+
+        public SceneReference SceneReference { set => _sceneReference = value; }
+        private SceneReference _sceneReference;
 
         /// <summary>
         /// メッセージの同期変数
@@ -37,8 +42,8 @@ namespace MLAPIQuickStart
         /// <summary>
         /// メッセージの設定
         /// </summary>
-        /// <param name="statusText">テキストメッセージ</param>
-        public void SetMessage(string statusText) => _networkMessage.Value = statusText;
+        /// <param name="message">テキストメッセージ</param>
+        public void SetMessage(string message) => _networkMessage.Value = message;
 
         /// <summary>
         /// メッセージ内容が変更された時に呼ばれるフック関数
