@@ -1,8 +1,6 @@
 ﻿using MLAPI;
 using MLAPI.NetworkVariable;
-using MLAPI.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace MLAPIQuickStart
@@ -13,6 +11,8 @@ namespace MLAPIQuickStart
         private Text textMessage;
         [SerializeField, Tooltip("メッセージ送信用のボタン")]
         private Button buttonSendMessage;
+        [SerializeField, Tooltip("銃弾の弾数表示用のテキスト")]
+        private Text textAmmo;
 
         public PlayerScript PlayerScript { set => _playerScript = value; }
         private PlayerScript _playerScript;
@@ -44,6 +44,12 @@ namespace MLAPIQuickStart
         /// </summary>
         /// <param name="message">テキストメッセージ</param>
         public void SetMessage(string message) => _networkMessage.Value = message;
+
+        /// <summary>
+        /// 銃弾の弾数を表示する
+        /// </summary>
+        /// <param name="value"></param>
+        public void DisplayAmmo(int value) => textAmmo.text = $"Ammo: {value}";
 
         /// <summary>
         /// メッセージ内容が変更された時に呼ばれるフック関数

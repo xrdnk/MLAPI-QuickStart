@@ -34,7 +34,20 @@ namespace MLAPIQuickStart
 
         private SceneScript _sceneScript;
 
-        private int _currentWeaponIndex = 1;
+        /// <summary>
+        /// 現在の武器インデックス
+        /// </summary>
+        private int _currentWeaponIndex;
+
+        /// <summary>
+        /// 現在の武器
+        /// </summary>
+        private Weapon _activeWeapon;
+
+        /// <summary>
+        /// 武器の攻撃間隔
+        /// </summary>
+        private float _weaponCooldownTime;
 
         #region Constants
         private static readonly string HORIZONTAL = "Horizontal";
@@ -75,6 +88,13 @@ namespace MLAPIQuickStart
             foreach (var weapon in playerWeapons.Where(weapon => weapon != null))
             {
                 weapon.SetActive(false);
+            }
+
+            // 現在の武器の設定と銃弾の弾数を表示する
+            if (_currentWeaponIndex < playerWeapons.Count && playerWeapons[_currentWeaponIndex] != null)
+            {
+                _activeWeapon = playerWeapons[_currentWeaponIndex].GetComponent<Weapon>();
+                _sceneScript.DisplayAmmo(_activeWeapon.weaponAmmo);
             }
         }
 
@@ -120,6 +140,18 @@ namespace MLAPIQuickStart
                 var nextIndex = _currentWeaponIndex++ % playerWeapons.Count;
 
                 ChangeActiveWeaponServerRpc(nextIndex);
+            }
+
+            // 左クリックで発射処理を走らせる
+            if (Input.GetButtonDown("Fire1"))
+            {
+                if (_activeWeapon && Time.time > _weaponCooldownTime && _activeWeapon.weaponAmmo > 0)
+                {
+                    _weaponCooldownTime = Time.time + _activeWeapon.weaponCooldown;
+                    _activeWeapon.weaponAmmo--;
+                    _sceneScript.DisplayAmmo(_activeWeapon.weaponAmmo);
+                    FireWeaponServerRpc();
+                }
             }
         }
 
@@ -177,8 +209,32 @@ namespace MLAPIQuickStart
         /// 武器インデックスを設定する
         /// </summary>
         /// <param name="index">武器インデックス</param>
+        /// <param name="serverRpcParams">ServerRpcParams</param>
         [ServerRpc(RequireOwnership = true)]
-        private void ChangeActiveWeaponServerRpc(int index) => _networkWeaponIndex.Value = index;
+        private void ChangeActiveWeaponServerRpc(int index, ServerRpcParams serverRpcParams = default) => _networkWeaponIndex.Value = index;
+
+        /// <summary>
+        /// サーバーへ発射処理を走らせる
+        /// </summary>
+        /// <param name="serverRpcParams">ServerRpcParams</param>
+        [ServerRpc(RequireOwnership = true)]
+        private void FireWeaponServerRpc(ServerRpcParams serverRpcParams = default) => FireWeaponClientRpc();
+
+        /// <summary>
+        /// 全クライアントへ発射処理を送る
+        /// </summary>
+        /// <param name="clientRpcParams">ClientRpcParams</param>
+        [ClientRpc]
+        private void FireWeaponClientRpc(ClientRpcParams clientRpcParams = default)
+        {
+            var bullet = Instantiate(_activeWeapon.weaponBullet, _activeWeapon.weaponFirePosition.position,
+                _activeWeapon.weaponFirePosition.rotation);
+            bullet.GetComponent<Rigidbody>().velocity = bullet.transform.forward * _activeWeapon.weaponSpeed;
+            if (bullet)
+            {
+                Destroy(bullet, _activeWeapon.weaponLife);
+            }
+        }
 
         /// <summary>
         /// プレイヤー名が変更された時に呼ばれるフック関数
@@ -215,6 +271,11 @@ namespace MLAPIQuickStart
             if (0 < newIndex && newIndex < playerWeapons.Count && playerWeapons[newIndex] != null)
             {
                 playerWeapons[newIndex].SetActive(true);
+                _activeWeapon = playerWeapons[_networkWeaponIndex.Value].GetComponent<Weapon>();
+                if (IsLocalPlayer)
+                {
+                    _sceneScript.DisplayAmmo(_activeWeapon.weaponAmmo);
+                }
             }
         }
 
