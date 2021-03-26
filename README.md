@@ -8,6 +8,8 @@ This project is an adaptation of Mirror's Quick Start Guide into MLAPI v0.1.0 co
 
 https://mirror-networking.gitbook.io/docs/community-guides/quick-start-guide
 
+Note that Part 16 through Part 19 are omitted here.
+
 ## Licence
 
 This project is licensed under the MIT License.
