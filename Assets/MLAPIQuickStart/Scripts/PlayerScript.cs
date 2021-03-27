@@ -137,9 +137,16 @@ namespace MLAPIQuickStart
             // 右クリックで武器変更処理を走らせる
             if (Input.GetButtonDown("Fire2"))
             {
-                var nextIndex = _currentWeaponIndex++ % playerWeapons.Count;
+                // 解釈が誤りそうなので修正
+                // var nextIndex = _currentWeaponIndex++ % playerWeapons.Count;
+                _currentWeaponIndex++;
+                if (_currentWeaponIndex > playerWeapons.Count)
+                {
+                    _currentWeaponIndex = 0;
+                }
 
-                ChangeActiveWeaponServerRpc(nextIndex);
+                // ChangeActiveWeaponServerRpc(nextIndex);
+                ChangeActiveWeaponServerRpc(_currentWeaponIndex);
             }
 
             // 左クリックで発射処理を走らせる
