@@ -177,7 +177,7 @@ namespace MLAPIQuickStart
         {
             if (_sceneScript != null)
             {
-                _sceneScript.SetMessage($"{_networkPlayerName.Value} says hello {Random.Range(10, 99)}");
+                _sceneScript.SetMessage($"SenderId:{serverRpcParams.Receive.SenderClientId}[{_networkPlayerName.Value} says hello {Random.Range(10, 99)}]");
             }
         }
 
@@ -225,7 +225,14 @@ namespace MLAPIQuickStart
         /// </summary>
         /// <param name="serverRpcParams">ServerRpcParams</param>
         [ServerRpc(RequireOwnership = true)]
-        private void FireWeaponServerRpc(ServerRpcParams serverRpcParams = default) => FireWeaponClientRpc();
+        private void FireWeaponServerRpc(ServerRpcParams serverRpcParams = default)
+            => FireWeaponClientRpc(
+                // new ClientRpcParams { Send = new ClientRpcSendParams
+                //     { TargetClientIds =
+                //         NetworkManager.Singleton.ConnectedClientsList
+                //         .Where(c => c.ClientId != OwnerClientId)
+                //         .Select(c => c.ClientId).ToArray() }}
+                );
 
         /// <summary>
         /// 全クライアントへ発射処理を送る
