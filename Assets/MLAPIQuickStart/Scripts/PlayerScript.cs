@@ -106,7 +106,7 @@ namespace MLAPIQuickStart
                 _sceneScript.PlayerScript = this;
 
                 var thisTransform = transform;
-                thisTransform.position = new Vector3(Random.Range(-5, 5), 0, Random.Range(-5, 5));
+                // thisTransform.position = new Vector3(Random.Range(-5, 5), 0, Random.Range(-5, 5));
                 _cameraTransform.transform.SetParent(thisTransform);
                 _cameraTransform.localPosition = new Vector3(0, 0, 0);
 
