@@ -24,7 +24,8 @@ namespace MLAPIPractice.ChatMessage
                 .AddTo(this);
 
             buttonTextMessage.OnClickAsObservable()
-                .Subscribe(_ => SendTextMessage(inputFieldTextMessage.text));
+                .Subscribe(_ => SendTextMessage(inputFieldTextMessage.text))
+                .AddTo(this);
         }
 
         private void SendTextMessage(string message)
