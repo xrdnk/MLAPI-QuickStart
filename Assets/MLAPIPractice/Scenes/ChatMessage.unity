@@ -154,7 +154,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71c662b4d6324e28a61fd9e6ea1e55fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _Provider: {fileID: 425858269}
+  service: {fileID: 425858269}
   _View: {fileID: 425858268}
 --- !u!114 &425858268
 MonoBehaviour:

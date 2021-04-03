@@ -16,7 +16,7 @@ namespace MLAPIPractice.ChatMessage
         public static readonly string SERVER_TO_ALL_CLIENTS = "SERVER_TO_ALL_CLIENTS";
     }
 
-    public class ChatMessageProvider : MonoBehaviour
+    public class ChatMessageService : MonoBehaviour
     {
         public IObservable<(ulong senderId, string message)> OnReceivedMessageAsObservable() => _onReceivedMessageSubject;
         private readonly Subject<(ulong senderId, string message)> _onReceivedMessageSubject = new Subject<(ulong senderId, string message)>();

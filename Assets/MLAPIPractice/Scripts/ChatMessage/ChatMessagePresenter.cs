@@ -6,18 +6,18 @@ namespace MLAPIPractice.ChatMessage
     public class ChatMessagePresenter : MonoBehaviour
     {
         [SerializeField]
-        private ChatMessageProvider _Provider = default;
+        private ChatMessageService service = default;
         [SerializeField]
         private ChatMessageView _View = default;
 
         private void Awake()
         {
-            _Provider.OnReceivedMessageAsObservable()
+            service.OnReceivedMessageAsObservable()
                 .Subscribe(_View.DisplayTextMessage)
                 .AddTo(this);
 
             _View.OnSendTextMessageAsObservable()
-                .Subscribe(_Provider.SendMessageToServerToAllClients)
+                .Subscribe(service.SendMessageToServerToAllClients)
                 .AddTo(this);
         }
     }
