@@ -32,6 +32,7 @@ namespace MLAPIPractice.ChatMessage
         private void OnGUI()
         {
             _stringBuilder.Length = 0;
+            GUI.skin.label.fontSize = 30;
 
             foreach (var message in _logMessages)
             {
