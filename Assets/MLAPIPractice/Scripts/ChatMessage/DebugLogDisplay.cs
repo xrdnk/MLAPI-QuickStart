@@ -1,11 +1,10 @@
-using System.Collections;
-using System.Collections.Generic; // Queueのために必要
 using UnityEngine;
-using System.Text; // StringBuilderのために必要
+using System.Collections.Generic;
+using System.Text;
 
 namespace MLAPIPractice.ChatMessage
 {
-    public class LogDisplay : MonoBehaviour
+    public class DebugLogDisplay : MonoBehaviour
     {
         [SerializeField]
         private int maxLogCount = 20;
