@@ -23,6 +23,7 @@ namespace MLAPIPractice.ChatMessage
 
         private async void Awake()
         {
+            // NetworkManager がリスナー状態になるまで待つ
             await UniTask.WaitUntil(() => NetworkManager.Singleton.IsListening);
 
             if (NetworkManager.Singleton.IsServer)
